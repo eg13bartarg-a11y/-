@@ -1,0 +1,260 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>Ёж в космосе</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<style>
+:root{--bg:#0b0d1f;--tx:#f4eefc;--bt:#bde0fe;--ac:#ffd6a5}
+html,body{margin:0;height:100%;background:#0b0d1f;color:var(--tx);font:16px system-ui,sans-serif;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+canvas{position:fixed;inset:0;width:100%;height:100%}
+.o{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;background:rgba(11,13,31,.88);padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.o.on{display:flex}
+button{font:inherit;font-size:20px;padding:12px 26px;border:0;border-radius:16px;background:var(--bt);color:#1b1d3a;cursor:pointer}
+h1{margin:0;font-size:clamp(28px,6vw,54px);color:var(--ac)}
+#hint,#cnt{position:fixed;top:calc(8px + env(safe-area-inset-top));padding:6px 14px;background:rgba(11,13,31,.6);border-radius:12px;display:none}
+#hint{left:50%;transform:translateX(-50%);max-width:46vw;text-align:center}#cnt{right:calc(10px + env(safe-area-inset-right))}
+#joy{position:fixed;left:calc(24px + env(safe-area-inset-left));bottom:calc(24px + env(safe-area-inset-bottom));width:130px;height:130px;border-radius:50%;background:rgba(189,224,254,.18);border:2px solid rgba(189,224,254,.5);display:none}
+#knob{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px;border-radius:50%;background:rgba(255,214,165,.85);pointer-events:none}
+#act{position:fixed;right:calc(24px + env(safe-area-inset-right));bottom:calc(36px + env(safe-area-inset-bottom));display:none;background:var(--ac);font-size:22px;padding:18px 24px;border-radius:50px}
+#dl{top:auto;bottom:0;background:none;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+#db{background:#1d2145;border:2px solid var(--bt);border-radius:18px;padding:14px 22px;width:min(640px,86vw);text-align:left}
+#dw{color:var(--ac);font-weight:700;margin-bottom:4px}#dt{font-size:18px}
+#tp{background:radial-gradient(circle,#cdb4db,#0b0d1f 70%);font-size:34px;animation:z 1.8s}
+@keyframes z{0%{opacity:0}40%,60%{opacity:1}100%{opacity:0}}
+.sh{animation:s .12s infinite}@keyframes s{50%{transform:translate(6px,-5px) rotate(6deg)}}
+.m{font-size:clamp(36px,8vw,64px);letter-spacing:6px}.b{font-size:28px;margin:10px;padding:16px 30px}
+#tb{position:fixed;right:calc(24px + env(safe-area-inset-right));bottom:calc(120px + env(safe-area-inset-bottom));display:none;font-size:18px;padding:12px 20px;border-radius:40px}
+#tb.on{background:#ff9f1c;box-shadow:0 0 18px #ff9f1c}
+body.fsh #hint,body.fsh #cnt{top:calc(70px + env(safe-area-inset-top))}
+svg{touch-action:none}.cd{height:32vh;border:3px solid #444;border-radius:12px;cursor:pointer}.cd.ok{border-color:#b9fbc0}.pt{height:15vh;border:3px solid #444;border-radius:12px;cursor:pointer;background:#1d2145}.pt.sel{border-color:#ffd6a5}
+i.dt{display:inline-block;width:26px;height:26px;border-radius:50%;background:#4cc9f0;margin:0 10px;vertical-align:middle}i.ds{display:inline-block;width:80px;height:22px;border-radius:12px;background:#ff9f1c;margin:0 10px;vertical-align:middle}
+.lt{display:inline-block;margin:4px 8px;padding:6px 10px;border-radius:12px;opacity:.5;font-size:22px}.lt.cur{opacity:1;background:#1d2145;border:2px solid #ffd6a5}.lt i.dt{width:16px;height:16px;margin:0 5px}.lt i.ds{width:48px;height:14px;margin:0 5px}
+#mw{font-size:clamp(28px,8vh,52px)}#mi{min-height:40px}
+.cdl{cursor:pointer;text-align:center;width:11vw;max-width:70px}.cb{background:#f4eefc;color:#1b1d3a;border-radius:6px 6px 0 0;height:8vh;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700}.fl{height:32px;font-size:26px}
+#gear{position:fixed;right:calc(10px + env(safe-area-inset-right));top:calc(52px + env(safe-area-inset-top));display:none;padding:4px 12px;font-size:22px;border-radius:12px}body.fsh #gear{top:calc(114px + env(safe-area-inset-top))}label{display:block}
+#rot{display:none;z-index:9;background:#0b0d1f}@media(orientation:portrait){#rot{display:flex}}
+</style></head><body>
+<canvas id="c"></canvas>
+<div id="hint"></div><div id="cnt"></div>
+<div id="joy"><div id="knob"></div></div><button id="act">Действие (E)</button><button id="tb">Турбо: ВЫКЛ (T)</button><button id="gear" title="Настройки">⚙</button>
+<div id="dl" class="o"><div id="db"><div id="dw"></div><div id="dt"></div><small style="opacity:.6">нажмите, чтобы продолжить ▶</small></div></div>
+<div id="tp" class="o"><span>Телепортация…</span></div>
+<div id="menu" class="o on"><h1>🦔 Ёж в космосе 🚀</h1><p>Космическое приключение с Командиром Ёжом</p><button id="play">Играть</button><button id="mset">Настройки</button><button id="exit">Выход</button><small style="opacity:.6">🎵 Коснитесь экрана — включится музыка</small></div>
+<div id="mo" class="o"><h2 style="margin:0">Передайте слово азбукой Морзе</h2><div id="mw" class="m"></div><div id="mc" style="color:#ffd6a5;font-size:clamp(16px,3.4vw,28px)"></div><div id="mi" class="m" style="min-height:1.2em"></div><div><button id="bd" class="b" style="background:#4cc9f0">● ТОЧКА<br><small>короткий</small></button><button id="bt" class="b" style="background:#ff9f1c">▬▬ ТИРЕ<br><small>длинный</small></button></div></div>
+<div id="end" class="o"><div class="m"><span id="hh">🦔🚀</span> <span id="cm">🦔🎖️</span></div><div id="ft" style="font-size:clamp(20px,4vw,34px);max-width:80vw"></div><div id="eg" style="display:none"><h1 id="eh">КОНЕЦ ИГРЫ</h1><button id="rs">Начать заново</button></div></div>
+<div id="pi" class="o"><h2 style="margin:0">Починка труб Венеры: выберите деталь, затем карту</h2><div id="pc" style="display:flex;gap:8px"></div><div id="pp" style="display:flex;gap:8px"></div><div id="pm" style="min-height:1.4em;color:#ffd6a5"></div></div>
+<div id="wo" class="o"><h2 style="margin:0">Почините провода: протяните линию к концу того же цвета</h2><svg id="ws" viewBox="0 0 400 300" style="height:62vh;max-width:90vw"></svg></div>
+<div id="mp" class="o"><h2 style="margin:0">🔭 Телескоп: соберите изображение Земли</h2><div id="msl" style="display:flex;gap:4px"></div><div id="mtr" style="display:flex;gap:6px"></div><div id="mmg" style="min-height:1.4em;color:#ffd6a5"></div></div>
+<div id="cn" class="o"><h2 id="cp" style="margin:0"></h2><div id="cr" style="max-width:min(720px,92vw);font-size:18px"></div><div id="cl"></div><button id="ck">Продолжить</button><div id="cmsg" style="min-height:1.4em;color:#ffd6a5"></div></div>
+<div id="ct" class="o"><div class="m" id="cx">🧰</div></div>
+<div id="ch" class="o"><div style="font-size:24px">Потерянный ёж просит о помощи. Что делаем?</div><button id="c1">Забрать ёжика на борт</button><button id="c2" style="background:#ffafcc">Улететь, не моё дело</button></div>
+<div id="bh" class="o" style="background:rgba(30,0,40,.92)"><h1>🌀 Чёрная дыра затягивает!</h1><p>Жмите кнопку 30 раз, чтобы вырваться!</p><div style="width:60vw;height:16px;background:#333;border-radius:8px"><div id="bp" style="height:100%;width:0;background:#b388eb;border-radius:8px"></div></div><button id="bb" class="b">ТОЛКАТЬ!</button></div>
+<div id="st" class="o"><h2 style="margin:0">Настройки</h2><label>Громкость музыки: <span id="mvv">50</span>%<br><input type="range" id="mvl" min="0" max="100" value="50" style="width:min(320px,70vw)"></label><label><input type="checkbox" id="dk" checked> Приглушать музыку в диалогах</label><button id="sx">Закрыть</button></div>
+<div id="rot" class="o"><h1>📱↻</h1><p>Поверните устройство горизонтально</p></div>
+<script>
+const $=i=>document.getElementById(i),c=$('c'),g=c.getContext('2d'),R=(a,b)=>a+Math.random()*(b-a);
+let W,H,Z=1;function rs(){const d=devicePixelRatio||1;W=innerWidth;H=innerHeight;c.width=W*d;c.height=H*d;g.setTransform(d,0,0,d,0,0);Z=H/600}
+addEventListener('resize',rs);rs();
+// ---- звук (Web Audio) ----
+let A,eg;const au=()=>{if(!A){A=new(window.AudioContext||webkitAudioContext)();mg=A.createGain();mg.gain.value=mvol;mg.connect(A.destination);const o=A.createOscillator();eg=A.createGain();eg.gain.value=0;o.type='sawtooth';o.frequency.value=55;o.connect(eg).connect(A.destination);o.start()}A.resume();return A};
+function tn(f,f2,d,ty='sine',v=.15,t=0){try{const a=au(),o=a.createOscillator(),n=a.createGain(),s=a.currentTime+t;o.type=ty;o.frequency.setValueAtTime(f,s);o.frequency.exponentialRampToValueAtTime(f2,s+d);n.gain.setValueAtTime(v,s);n.gain.exponentialRampToValueAtTime(.001,s+d);o.connect(n).connect(a.destination);o.start(s);o.stop(s+d)}catch(e){}}
+function nz(d,v=.3){try{const a=au(),b=a.createBuffer(1,a.sampleRate*d,a.sampleRate),x=b.getChannelData(0);for(let i=0;i<x.length;i++)x[i]=(Math.random()*2-1)*(1-i/x.length);const s=a.createBufferSource(),n=a.createGain();n.gain.value=v;s.buffer=b;s.connect(n).connect(a.destination);s.start()}catch(e){}}
+const sPick=()=>{tn(600,1200,.15);tn(900,1500,.15,'sine',.15,.1)},sAct=()=>tn(500,800,.1,'triangle'),sTele=()=>tn(200,1800,1.5,'sawtooth',.08),sHit=()=>{nz(.5);tn(120,30,.4,'square')},
+sLaugh=()=>{for(let i=0;i<10;i++)tn(420-i*12,260-i*8,.12,'square',.1,i*.17)},sScream=()=>{tn(500,1500,.3,'sawtooth',.12);tn(1500,600,1.2,'sawtooth',.12,.3);tn(1480,640,1.2,'square',.05,.33)};
+// ---- данные ----
+const P=[['Земля',0,0,170,'#a8d8ff'],['Венера',0,5400,140,'#ffe0a3'],['Марс',5280,-1200,130,'#ffb3a7'],['Юпитер',-5280,-1200,260,'#ffd6a5'],['Сатурн',-5280,-6600,200,'#fdf0b8'],['Плутон',5280,-6600,90,'#e4d4f4'],['Луна',0,-5400,70,'#d8d8e8'],['Нептун',10560,-1800,150,'#a0c4ff']],
+B={mw:[-12300,-8100,12300,6600],jup:[-3500,-2500,3500,2500],brd:[-3500,-2500,3500,2500]},BG={mw:'#0b0d1f',jup:'#0d1b2e',brd:'#22092b'},
+DEC={jup:[[-1500,-1800,120,'#ffd6a5'],[2200,900,90,'#a0c4ff']],brd:[[1800,-1200,140,'#cdb4db'],[-2200,300,100,'#ffafcc']]},
+HT={idle:'Летите к Земле и поговорите с Командиром',m1a:'Соберите потерянную еду 🍎',m1b:'Вернитесь к Командиру',m1c:'Догоните корабль ёжиков с Юпитера',m2a:'Соберите бумаги с кодом Морзе 📜',m2b:'Летите на Марс',m3b:'Найдите монстра в галактике Брдыщ',m3c:'Летите на Плутон',m4a:'Соберите 5 деталей труб 🔧',m4b:'Летите на Венеру',m5a:'Соберите 5 фрагментов 🧩',m5b:'Летите на Луну',m6a:'Найдите зажигалку 🔥',m6b:'Летите на Нептун'},
+MC={П:'.--.',Р:'.-.',И:'..',В:'.--',Е:'.',Т:'-',М:'--',А:'.-',С:'...',Д:'-..',У:'..-',З:'--..',Ь:'-..-',Я:'.-.-.'},VM=450,
+ST=[...Array(160)].map(()=>[R(0,1600),R(0,1600),R(.6,2)]);
+let mg,mvol=.5,mood='',mst=0,mnx=0,em='',stp=0,duckOn=1,sd=0,dlt=0,turbo=0,mm=[],mt=1,inv=0,fl=0,sec=0,siv,fh,ap=0,scene='menu',map='mw',q='idle',done=0,order=[],items=[],lock=0,jx=0,jy=0,keys={},T=0,sh={x:0,y:-380,vx:0,vy:0,a:0},cx=0,cy=0,mon={x:2200,y:300,fly:0},AT=0,ms=[],sp=0,msg='',sm=0,sv;
+// ---- джойстик ----
+const J=$('joy'),K=$('knob');let jp=null;
+function jm(e){const r=J.getBoundingClientRect(),R2=r.width/2;let dx=e.clientX-r.left-R2,dy=e.clientY-r.top-R2;const l=Math.hypot(dx,dy);if(l>R2){dx*=R2/l;dy*=R2/l}jx=dx/R2;jy=dy/R2;K.style.transform=`translate(${dx}px,${dy}px)`}
+J.onpointerdown=e=>{jp=e.pointerId;J.setPointerCapture(e.pointerId);jm(e);au()};
+J.onpointermove=e=>{if(e.pointerId==jp)jm(e)};
+J.onpointerup=J.onpointercancel=()=>{jp=null;jx=jy=0;K.style.transform=''};
+addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=1;if(e.key.toLowerCase()=='e')act();if(e.key=='.')mp('.');if(e.key=='-')mp('-');if(e.key.toLowerCase()=='t')tg()});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=0);
+// ---- диалоги и телепорт ----
+let dq=[],dcb;
+function say(w,l,cb){if(document.body.classList.contains('fsh')){lock=1;return setTimeout(()=>say(w,l,cb),400)}dq=l.slice();dcb=cb;lock=1;$('dw').textContent=w;setTimeout(()=>{$('dl').classList.add('on');nx()},500)}
+function nx(){dlt=Date.now();if(!dq.length){$('dl').classList.remove('on');lock=0;const f=dcb;dcb=0;f&&f();return}$('dt').textContent=dq.shift();sAct()}
+$('dl').onclick=()=>{if(Date.now()-dlt>300)nx()};
+function tp(m,x,y,cb){lock=1;const t=$('tp');t.classList.remove('on');void t.offsetWidth;t.classList.add('on');sTele();
+setTimeout(()=>{map=m;sh={x,y,vx:0,vy:0,a:0};items=[];mm=[]},900);setTimeout(()=>{t.classList.remove('on');lock=0;cb&&cb()},1800)}
+function spawn(n,t,l){items=[];const b=B[map];for(let i=0;i<n;i++)items.push({x:R(b[0]+600,b[2]-600),y:R(b[1]+600,b[3]-600),t,l})}
+const fin=()=>{done++;if(sec)return;if(!(sd&1)){sd|=1;sec=1;siren()}else if(!(sd&2)){sd|=2;sec=3;siren()}},home=()=>tp('mw',0,-380,()=>{q='idle';fin()});
+const CM='Командир Ёж';
+// ---- взаимодействия ----
+const near=(x,y,r)=>Math.hypot(sh.x-x,sh.y-y)<r;
+function target(){if(scene!='map'||lock)return;
+if(map=='mw'){if((q=='idle'||q=='m1b')&&near(0,0,320))return{f:cmd};if(q=='m2b'&&near(5280,-1200,230))return{f:mars};if(q=='m3c'&&near(5280,-6600,200))return{f:pluto};if(q=='m4b'&&near(0,5400,230))return{f:venus};if(sec==1&&near(-5280,-6600,330))return{f:saturn};if(sec==3&&near(BH[0]-330,BH[1]-110,230))return{f:hog};if(q=='m5b'&&near(0,-5400,200))return{f:moon};if(q=='m6b'&&near(10560,-1800,250))return{f:nept}}
+if(map=='jup'&&q=='m1c'&&near(jx2(),jy2(),150))return{f:()=>say('Ёжики с Юпитера',['Еда! Еда! Мы голодали целых шесть минут — это почти вечность!','Спасибо! Один из нас уже начал грызть собственные иголки.','Мы отправим тебя домой. Командиру про иголки — ни слова!'],home)};
+if(map=='brd'&&q=='m3b'&&near(mon.x,mon.y,260))return{f:()=>say('Монстр Брдыщ',['О, ты за обогревателем? Верну! Но только ЗАСЛУЖЕННО!','Сразимся! Уворачивайся от моих метеоритов 30 секунд!'],arena)}}
+const jx2=()=>Math.cos(T*.11)*1700,jy2=()=>Math.sin(T*.11)*1000;
+function act(){const t=target();if(t)t.f()}$('act').onpointerdown=e=>{e.preventDefault();au();act()};
+function cmd(){if(sec==4)return say(CM,['Ты привёз потерянного ёжика?! Живого?! Я уже вычеркнул его из ведомости.','Ладно, ты молодец. Получи ёж-печеньку. Новое задание уже ждёт — ха!'],()=>{sec=0});if(sec==3)return say(CM,['Мне доложили: ты бросил ёжика у чёрной дыры?! Товарища?!','Я в ярости! Ты уволен — без выходного пособия и без ложки!'],bad);if(sec==1)return say(CM,['Стоп. Сирена выла на всю галактику, а ты припёрся ко мне?!','Я не давал тебе этого задания, но НЕ лететь на Сатурн было нельзя!','Ты уволен! Сдай скафандр и ложку.'],bad);
+if(q=='m1b')return say(CM,['О, жив! Да ещё с едой. Я поставил две монеты, что ты не вернёшься.','Телепортирую тебя к ёжикам с Юпитера. Телепорт слегка пахнет носками, не пугайся.'],()=>tp('jup',-2800,1800,()=>q='m1c'));
+if(done==6)return finale();const m=order[done];
+if(m==1)say(CM,['Слушай, колючка. Ёжики с Юпитера летели в другую галактику и потеряли запас еды.','Не спрашивай, как можно потерять еду. Ёжики есть ёжики.','Собери 6 ящиков еды. И не съедай по дороге — я посчитаю! Ха!'],()=>{q='m1a';spawn(6,'🍎','Еда')});
+if(m==2)say(CM,['На Марсе беда: сломалась связь, а Морзе там никто не знает. Позор, а не планета.','Найди 4 бумажки с расшифровкой — валяются где-то в космосе. Не спрашивай почему.','Потом лети на Марс. Я бы сам, но у меня обед.'],()=>{q='m2a';spawn(4,'📜','Бумага')});
+if(m==3)say(CM,['На Плутоне пропал главный обогреватель. Ёжики мёрзнут, зубы стучат!','Его стащил монстр из галактики «Брдыщ». Говорят, он добрый. Почти.','Вернёшься — хорошо. Не вернёшься — тоже хорошо. Ха-ха!'],()=>tp('brd',-2800,1800,()=>q='m3b'));
+if(m==4)say(CM,['На Венере катастрофа! Водопровод лопнул, детали труб разлетелись по космосу.','Собери 5 деталей и лети на Венеру — там карты с дырками, надо вставить детали.','Работа сантехника! Скучно, зато не съедят. Наверное.'],()=>{q='m4a';spawn(5,'🔧','Труба')});
+if(m==5)say(CM,['На Луне ёжики разбили телескоп. Футболом. Не спрашивай.','Собери 5 фрагментов по космосу и лети на Луну. Земля должна получиться красивая — не испорти мне Землю!'],()=>{q='m5a';spawn(5,'🧩','Фрагмент')});
+if(m==6)say(CM,['На Нептуне ёжики не могут решить три задачки со свечами. Прогуливали математику.','Найди зажигалку — где-то в космосе. Не спрашивай, я не курю. Потом лети на Нептун.','Там сундук с сокровищами. Часть — мне. Шучу. Нет, не шучу.'],()=>{q='m6a';spawn(1,'🔥','Зажигалка')})}
+function mars(){say('Марсианские ёжики',['Наконец-то! Связь сломана, а Морзе никто не знает. Мы вообще хотели заказать пиццу с Земли…','Бумажки с расшифровкой? Гений! Передай три слова.'],()=>morse(()=>say('Марсианские ёжики',['Связь работает! Пицца уже летит. Лет пять.','Спасибо, друг! Командиру привет — он нам должен денег.'],()=>{q='idle';fin()})))}
+function pluto(){say('Ёжики Плутона',['КРИСТАЛЛ! Мы снова чувствуем носы! Ты герой!','Одному ёжику было так холодно, что он стал мороженым. Но уже оттаял.'],()=>{q='idle';fin()})}
+// ---- азбука Морзе ----
+let mwI,mli,minp,mcb;const W3=['ПРИВЕТ','МАРС','ДРУЗЬЯ'];
+function morse(cb){lock=1;mwI=0;mli=0;minp='';mcb=cb;$('mo').classList.add('on');mshow()}
+function mshow(){const w=W3[mwI],sy=c=>[...c].map(x=>x=='.'?'<i class="dt"></i>':'<i class="ds"></i>').join('');
+$('mw').innerHTML=[...w].map((x,i)=>`<span style="color:${i<mli?'#b9fbc0':i==mli?'#ffd6a5':'#888'}">${x}</span>`).join('');
+$('mc').innerHTML=[...w].map((x,i)=>`<div class="lt${i==mli?' cur':''}"><b>${x}</b><br>${sy(MC[x])}</div>`).join('');
+$('mi').innerHTML=sy(minp)+'<span style="opacity:.25">'+sy(MC[w[mli]].slice(minp.length))+'</span>'}
+function mp(s){if(!$('mo').classList.contains('on'))return;const w=W3[mwI],code=MC[w[mli]];tn(s=='.'?900:420,s=='.'?900:420,s=='.'?.12:.45,'sine',.25);minp+=s;
+if(!code.startsWith(minp)){sHit();minp=''}else if(minp==code){minp='';sPick();if(++mli==w.length){mli=0;mwI++}if(mwI==3){$('mo').classList.remove('on');lock=0;return mcb()}}mshow()}
+$('bd').onclick=()=>mp('.');$('bt').onclick=()=>mp('-');
+// ---- арена ----
+const AW=420,AH=230;
+function arena(){ap=0;scene='arena';sv={x:sh.x,y:sh.y};sh={x:0,y:0,vx:0,vy:0,a:0};AT=0;ms=[];sm=0;msg=''}
+function win(){scene='map';sh={x:mon.x-300,y:mon.y,vx:0,vy:0,a:0};sv=0;sPick();
+say('Монстр Брдыщ',['Что?! Ты ни разу не задел ни одного метеорита? Скукотища…','Держи кристалл Плутона. Он тёплый и немного липкий. Я полетел, мне грустно.'],()=>{mon.fly=1;setTimeout(()=>tp('mw',0,-380,()=>q='m3c'),1500)})}
+// ---- финал ----
+function finale(){say(CM,['Так-так-так… Все шесть заданий выполнены. Я удивлён. И слегка разочарован: рассчитывал на твой провал.','Но слово есть слово. Зарплата: 💰 1000 ёж-монет. Не потрать всё на еду, ха!','А ещё командование в моём лице приготовило тебе особую премию. Специально. С любовью. Закрой глаза и протяни лапки…'],()=>{
+em='fun';const e=$('end'),f=$('ft');e.classList.add('on');f.innerHTML='Зарплата: 💰 1000 ёж-монет<br>Премия: 💩 Куча говна';
+setTimeout(()=>{$('hh').classList.add('sh');f.textContent='А-А-А-А-А-А-А!!!';sScream()},2200);
+setTimeout(()=>{$('hh').classList.remove('sh');$('cm').classList.add('sh');f.textContent='ХА-ХА-ХА-ХА-ХА!';sLaugh()},4600);
+setTimeout(()=>{$('cm').classList.remove('sh');$('eg').style.display='block'},7600)})}
+$('rs').onclick=()=>{em='';$('hh').textContent='🦔🚀';$('eh').textContent='КОНЕЦ ИГРЫ';$('end').classList.remove('on');$('eg').style.display='none';$('ft').textContent='';newGame()};
+// ---- метеориты, турбо, сирена ----
+function metUpd(dt){inv-=dt;fl-=dt;if(lock)return;mt-=dt*(.3+sp/VM);
+if(mt<=0&&mm.length<16){mt=1.1;const t=Math.random(),ty=t<.34?0:t<.67?1:2,r=[28,62,12][ty],v=[70,130,300][ty]*R(.8,1.2),a=sh.a+R(-1.3,1.3)+(sp<60?R(0,6.28):0),b=a+Math.PI+R(-.3,.3);mm.push({x:sh.x+Math.cos(a)*950,y:sh.y+Math.sin(a)*950,r,ty,vx:Math.cos(b)*v,vy:Math.sin(b)*v})}
+mm.forEach(m=>{m.x+=m.vx*dt;m.y+=m.vy*dt;if(Math.hypot(m.x-sh.x,m.y-sh.y)<m.r+14&&inv<=0){inv=1.3;fl=.4;sHit();const a=Math.atan2(sh.y-m.y,sh.x-m.x);sh.vx=Math.cos(a)*650;sh.vy=Math.sin(a)*650}});
+mm=mm.filter(m=>Math.hypot(m.x-sh.x,m.y-sh.y)<1500)}
+function met(m){g.fillStyle=m.ty==1?'#8f8596':m.ty==2?'#c9b8d6':'#a69cac';g.beginPath();g.arc(m.x,m.y,m.r,0,7);g.fill();g.fillStyle='rgba(0,0,0,.2)';g.beginPath();g.arc(m.x-m.r*.3,m.y-m.r*.2,m.r*.25,0,7);g.fill()}
+function tg(){turbo^=1;$('tb').classList.toggle('on',!!turbo);$('tb').textContent='Турбо: '+(turbo?'ВКЛ':'ВЫКЛ')+' (T)';sAct()}
+$('tb').onpointerdown=e=>{e.preventDefault();au();tg()};
+function siren(){clearInterval(siv);let n=0;const f=()=>{if((sec!=1&&sec!=3)||n++>6)return clearInterval(siv);tn(500,1000,.55,'sawtooth',.3);tn(1000,500,.55,'square',.2,.55)};f();siv=setInterval(f,1100)}
+function ov(){if(fl>0){g.fillStyle=`rgba(255,80,80,${fl})`;g.fillRect(0,0,W,H)}
+const ar=(x,y,col,lb)=>{const dx=x-sh.x,dy=y-sh.y,d=Math.hypot(dx,dy);if(d<500)return;const a=Math.atan2(dy,dx),r=Math.min(W,H)*.34,X=W/2+Math.cos(a)*r,Y=H/2+Math.sin(a)*r;g.save();g.translate(X,Y);g.rotate(a);g.fillStyle=col;g.beginPath();g.moveTo(60,0);g.lineTo(-10,-45);g.lineTo(-10,-18);g.lineTo(-60,-18);g.lineTo(-60,18);g.lineTo(-10,18);g.lineTo(-10,45);g.fill();g.restore();tx(lb,X,Y-70,28)};
+if((sec==1||sec==3)&&scene=='map'&&map=='mw'){g.fillStyle=`rgba(255,0,0,${.12+.12*Math.sin(T*8)})`;g.fillRect(0,0,W,H);sec==1?ar(-5280,-6600,'#ff4d4d','САТУРН!'):ar(BH[0]-330,BH[1]-110,'#ff4d4d','ЧЁРНАЯ ДЫРА!')}
+if(items.length&&scene=='map'){let b=items[0];items.forEach(i=>{if(Math.hypot(i.x-sh.x,i.y-sh.y)<Math.hypot(b.x-sh.x,b.y-sh.y))b=i});const dx=b.x-sh.x,dy=b.y-sh.y,d=Math.hypot(dx,dy);if(d>400){const a=Math.atan2(dy,dx),r=Math.min(W,H)*.42,X=W/2+Math.cos(a)*r,Y=H/2+Math.sin(a)*r;g.save();g.translate(X,Y);g.rotate(a);g.fillStyle='#ffe066';g.beginPath();g.moveTo(22,0);g.lineTo(-14,-14);g.lineTo(-14,14);g.fill();g.restore();tx(b.l+' '+Math.round(d/450)+' с',X,Y-26,18,'#ffe066')}}}
+function bad(){lock=1;em='sad';$('end').classList.add('on');$('hh').textContent='🦔😭';$('ft').textContent='Командир выставил вас за дверь. Вы уволены!';tn(400,100,1.4,'sawtooth',.15);setTimeout(()=>{$('eh').textContent='ПЛОХАЯ КОНЦОВКА: УВОЛЕН';$('eg').style.display='block'},3000)}
+addEventListener('fullscreenchange',()=>{if(document.fullscreenElement){document.body.classList.add('fsh');clearTimeout(fh);fh=setTimeout(()=>document.body.classList.remove('fsh'),4500)}else document.body.classList.remove('fsh');rs()});
+// ---- Венера: трубы ----
+const PS=[['M0,30 H60','M-70,30 H0 M60,30 H130','Прямая'],['M0,30 H30 V0','M-70,30 H0 M30,0 V-70','Левый 90°'],['M0,30 H30 V60','M-70,30 H0 M30,60 V130','Правый 90°'],['M0,30 H35 V0 H0','M-70,30 H0 M0,0 H-70','Левый 180°'],['M0,30 H35 V60 H0','M-70,30 H0 M0,60 H-70','Правый 180°']];
+function venus(){say('Ёжики Венеры',['Вода! Мы три дня мылись из лужи! Вот карты труб — в каждой не хватает детали.','Вставь детали правильно, и мы снова сможем принимать ванну. Мы очень грязные.'],()=>pipes(()=>say('Ёжики Венеры',['Вода течёт! Мы чистые и счастливые!','Командир обещал сантехника, а прислал тебя. Мы не в обиде.'],()=>{q='idle';fin()})))}
+function pipes(cb){lock=1;const mx=()=>[0,1,2,3,4].sort(()=>Math.random()-.5),cs=mx(),tr=mx(),dn={},o=$('pi'),st='fill="none" stroke-linecap="round" stroke-linejoin="round"';let sel=-1,n=0;
+function rd(){$('pc').innerHTML=cs.map((k,i)=>`<svg class="cd${dn[i]?' ok':''}" data-i="${i}" viewBox="-75 -75 210 210"><rect x="-75" y="-75" width="210" height="210" fill="#1d2145"/><path d="${PS[k][1]}" ${st} stroke="#7a8bb8" stroke-width="14"/>${dn[i]?`<path d="${PS[k][0]}" ${st} stroke="#9bf6ff" stroke-width="14"/>`:'<rect width="60" height="60" fill="none" stroke="#ffd6a5" stroke-width="3" stroke-dasharray="8 6"/>'}</svg>`).join('');
+$('pp').innerHTML=tr.map(k=>`<div style="text-align:center"><svg class="pt${sel==k?' sel':''}" data-k="${k}" viewBox="-5 -5 70 70"><path d="${PS[k][0]}" ${st} stroke="#9bf6ff" stroke-width="12"/></svg><br><small>${PS[k][2]}</small></div>`).join('')}
+o.onclick=e=>{const t=e.target.closest('svg');if(!t)return;if(t.dataset.k!==undefined){sel=+t.dataset.k;sAct()}else if(sel>=0&&!dn[t.dataset.i]){const i=+t.dataset.i;if(cs[i]==sel){dn[i]=1;tr.splice(tr.indexOf(sel),1);sel=-1;sPick();$('pm').textContent='Труба соединена!';if(++n==5)setTimeout(()=>{o.classList.remove('on');lock=0;cb()},900)}else{sHit();sel=-1;$('pm').textContent='Не подходит! Деталь вернулась в инвентарь.'}}rd()};
+$('pm').textContent='';rd();o.classList.add('on')}
+// ---- Сатурн: провода ----
+function saturn(){say('Ёжики Сатурна',['Это мы включили сирену! Космическая мышь перегрызла провода, свет погас, лифт застрял!','Концы перепутаны. Соедини провода одного цвета, пожалуйста!'],()=>wires(()=>{sec=0;clearInterval(siv);say('Ёжики Сатурна',['Свет! Лифт поехал! Мышь убежала с проводом в зубах.','Спасибо, герой! Лети к Командиру за новым заданием.'])}))}
+function wires(cb){lock=1;const C=['#ff6b6b','#ffd166','#06d6a0','#4cc9f0','#b388eb','#ff9f1c','#f28cb1','#e9ecef'],mx=()=>C.map((_,i)=>i).sort(()=>Math.random()-.5),L=mx(),Rt=mx(),s=$('ws'),y=(a,c)=>30+a.indexOf(c)*34;let h='',n=0,d=null,tl,lt;
+L.forEach((c,i)=>h+=`<line x1="0" y1="${30+i*34}" x2="60" y2="${30+i*34}" stroke="${C[c]}" stroke-width="6" stroke-dasharray="40 8"/><circle data-s="l" data-c="${c}" cx="60" cy="${30+i*34}" r="13" fill="${C[c]}"/>`);
+Rt.forEach((c,i)=>h+=`<line x1="400" y1="${30+i*34}" x2="340" y2="${30+i*34}" stroke="${C[c]}" stroke-width="6" stroke-dasharray="40 8"/><circle data-s="r" data-c="${c}" cx="340" cy="${30+i*34}" r="13" fill="${C[c]}"/>`);
+s.innerHTML=h;$('wo').classList.add('on');
+const pt=e=>{const r=s.getBoundingClientRect();return[(e.clientX-r.left)/r.width*400,(e.clientY-r.top)/r.height*300]},
+ln=(c,x1,y1,x2,y2)=>{const l=document.createElementNS('http://www.w3.org/2000/svg','line');Object.entries({x1,y1,x2,y2,stroke:C[c],'stroke-width':8,'stroke-linecap':'round','pointer-events':'none'}).forEach(([k,v])=>l.setAttribute(k,v));s.appendChild(l);return l};
+s.onpointerdown=e=>{const t=e.target;if(t.dataset&&t.dataset.s=='l'){lt=t;d=+t.dataset.c;tl=ln(d,60,y(L,d),...pt(e))}};
+s.onpointermove=e=>{if(d!==null){const p=pt(e);tl.setAttribute('x2',p[0]);tl.setAttribute('y2',p[1])}};
+s.onpointerup=e=>{if(d===null)return;const t=document.elementFromPoint(e.clientX,e.clientY);if(t&&t.dataset&&t.dataset.s=='r'&&+t.dataset.c==d){tl.setAttribute('x2',340);tl.setAttribute('y2',y(Rt,d));lt.dataset.s='x';sPick();if(++n==8)setTimeout(()=>{$('wo').classList.remove('on');lock=0;cb()},700)}else{tl.remove();sHit()}d=null}}
+// ---- Луна, Нептун, чёрная дыра ----
+const BH=[6000,4600];
+function bhd(){g.fillStyle='#000';g.beginPath();g.arc(BH[0],BH[1],90,0,7);g.fill();g.strokeStyle='#b388eb';g.lineWidth=12;g.beginPath();g.ellipse(BH[0],BH[1],160,50,-.4,0,7);g.stroke();tx('Чёрная дыра',BH[0],BH[1]+150,30,'#b388eb');
+if(sec==3){g.font='54px sans-serif';g.textAlign='center';g.fillText('🦔',BH[0]-330,BH[1]-110+Math.sin(T*3)*8);tx('Потерянный ёж',BH[0]-330,BH[1]-180,26,'#ffd6a5')}
+if(sec==4){g.font='34px sans-serif';g.textAlign='center';g.fillText('🦔',sh.x-Math.cos(sh.a)*55,sh.y-Math.sin(sh.a)*55+10)}}
+function hog(){say('Потерянный ёж',['Эй! Эй, вы! Мой корабль взорвался на задании, и я потерялся!','Меня тянет в чёрную дыру. Заберите меня! Я знаю анекдот про космос, он короткий: «Тут пусто». Всё.'],()=>{lock=1;$('ch').classList.add('on')})}
+$('c1').onclick=()=>{$('ch').classList.remove('on');bhole()};
+$('c2').onclick=()=>{$('ch').classList.remove('on');lock=0;say(CM,['Мне только что доложили: ты бросил ёжика у чёрной дыры?! Товарища?!','Я в ярости! Ты уволен — без выходного пособия и без ложки!'],bad)};
+function bhole(){lock=1;let n=0;const o=$('bh'),b=$('bb');b.textContent='ТОЛКАТЬ! 0/30';$('bp').style.width='0';o.classList.add('on');tn(80,40,2,'sawtooth',.15);
+b.onpointerdown=e=>{e.preventDefault();n++;sAct();b.textContent='ТОЛКАТЬ! '+n+'/30';$('bp').style.width=n/30*100+'%';if(n==30){o.classList.remove('on');sh.x-=900;sec=4;lock=0;sTele();say('Потерянный ёж',['Мы вырвались! Я думал, нас размажет в спагетти.','Теперь к Командиру! Только… он меня не уволит за потерянный корабль?'])}}}
+const EA='<rect width="300" height="200" fill="#0b0d1f"/><circle cx="150" cy="100" r="135" fill="#4a90d9"/><path d="M60 40q40-30 70 0t10 50q-40 20-60-10z" fill="#6fcf97"/><path d="M170 90q50-20 80 20t-30 60q-40 10-50-30z" fill="#6fcf97"/><ellipse cx="110" cy="150" rx="40" ry="14" fill="#fff" opacity=".7"/><ellipse cx="200" cy="40" rx="45" ry="12" fill="#fff" opacity=".7"/><circle cx="25" cy="20" r="2" fill="#fff"/><circle cx="278" cy="180" r="2" fill="#fff"/>';
+function moon(){say('Лунные ёжики',['Телескоп? Есть! Только он разбился на 5 кусочков — мы играли в футбол. Но вы никому не говорите.','Собери по кусочкам Землю — мы по ней скучаем. Особенно по пиццерии.'],()=>moonp(()=>say('Лунные ёжики',['Земля как новенькая! Мы будем смотреть на неё и плакать от счастья.','Спасибо, друг! Командиру — привет и штраф за футбол. Нет, это шутка.'],()=>{q='idle';fin()})))}
+function moonp(cb){lock=1;const o=$('mp'),tr=[0,1,2,3,4].sort(()=>Math.random()-.5),dn={};let sel=-1,n=0;
+const sv=(i,c,h)=>`<svg class="${c}" data-i="${i}" style="height:${h}vh" viewBox="${i*60} 0 60 200">${EA}</svg>`;
+function rd(){$('msl').innerHTML=[0,1,2,3,4].map(i=>dn[i]?sv(i,'cd ok',36):`<svg class="cd" data-s="${i}" style="height:36vh" viewBox="0 0 60 200"><rect width="60" height="200" fill="#1d2145"/><rect x="2" y="2" width="56" height="196" fill="none" stroke="#ffd6a5" stroke-width="3" stroke-dasharray="8 6"/></svg>`).join('');
+$('mtr').innerHTML=tr.map(i=>sv(i,'pt'+(sel==i?' sel':''),24)).join('')}
+o.onclick=e=>{const t=e.target.closest('svg');if(!t)return;if(t.classList.contains('pt')){sel=+t.dataset.i;sAct()}else if(t.dataset.s!==undefined&&sel>=0){const k=+t.dataset.s;if(k==sel){dn[k]=1;tr.splice(tr.indexOf(k),1);sel=-1;sPick();if(++n==5){rd();$('mmg').textContent='Земля собрана!';return setTimeout(()=>{o.classList.remove('on');lock=0;cb()},1500)}}else{sHit();sel=-1;$('mmg').textContent='Не сюда! Попробуйте другое место.'}}rd()};
+$('mmg').textContent='Выберите фрагмент, затем место';rd();o.classList.add('on')}
+function nept(){say('Ёжики Нептуна',['Зажигалка! Наконец-то! Три ночи сидели без света и спорили, кто дежурный по свечкам.','У нас три головоломки со свечами, а мы в математике не сильны. Поможешь?'],()=>candles(()=>say('Ёжики Нептуна',['Сундук открыт! Тут золото, корона и носок. Носок — наш.','Часть сокровищ — тебе. Спасибо, герой! Командир, наверное, уже забыл про тебя.'],()=>{q='idle';fin()})))}
+const CP=[['Зажги только те свечи, чьи номера в сумме дают 10. Нельзя зажигать свечи с нечётными числами. Число «4» приносит беду, лучше не зажигать.',[2,8]],['Зажги только те свечи, которые делятся только на себя и на единицу. Но ту, которая стоит первой — не трогай. И пусть свет не горит на тех, кто больше шести.',[2,3,5]],['Начни с третьей свечи. Зажги её. Зажигай каждую третью после неё. Но не зажигай ту, которая делится на 2.',[3,9]]];
+function candles(cb){lock=1;let p=0,lit={};const o=$('cn');
+function rd(){$('cp').textContent='Свечи: головоломка '+(p+1)+'/3';$('cr').textContent=CP[p][0];$('cl').innerHTML=[0,1].map(r=>'<div style="display:flex;gap:2vw;justify-content:center;margin:6px">'+[1,2,3,4,5].map(i=>{const n=r*5+i;return `<div class="cdl" data-n="${n}"><div class="fl">${lit[n]?'🔥':''}</div><div class="cb">${n}</div></div>`}).join('')+'</div>').join('')}
+$('cl').onclick=e=>{const t=e.target.closest('.cdl');if(!t)return;lit[t.dataset.n]=!lit[t.dataset.n];sAct();rd()};
+$('ck').onclick=()=>{const l=Object.keys(lit).filter(k=>lit[k]).map(Number).sort((a,b)=>a-b);if(l.join()==CP[p][1].join()){sPick();lit={};if(++p==3){o.classList.remove('on');return chest(cb)}$('cmsg').textContent='Верно! Новые свечи…'}else{sHit();$('cmsg').textContent='Неверно, подумай ещё!'}rd()};
+$('cmsg').textContent='';rd();o.classList.add('on')}
+function chest(cb){const o=$('ct'),x=$('cx');x.textContent='🧰';o.classList.add('on');tn(200,400,.3,'square');setTimeout(()=>{x.textContent='✨💎💰👑✨';sPick();sTele()},900);setTimeout(()=>{o.classList.remove('on');lock=0;cb()},2800)}
+// ---- музыка (процедурная, Web Audio) ----
+const tl=(a,n)=>{while(a.length<n)a=a.concat(a);return a.slice(0,n)},p=x=>tl(x.trim().split(/\s+/).map(v=>v=='.'?null:+v),32),dr=x=>tl([...x],32).map(c=>c=='x'),MI=m=>440*2**((m-69)/12);
+const MS={
+menu:{b:72,r:57,B:p('0 . . . . . . . -4 . . . . . . . 3 . . . . . . . -2 . . . . . . .'),L:p('12 . . 15 . . 19 . 17 . . 15 . . 12 . 15 . . 19 . . 22 . 19 . . 15 . . 14 . .'),bw:'sine',lw:'triangle',bl:7,ll:4,bv:.25,lv:.1,k:dr('.'),h:dr('.')},
+map:{b:116,r:55,B:p('0 . 0 . 0 . 0 . 5 . 5 . 5 . 5 . -3 . -3 . -3 . -3 . -5 . -5 . -5 .'),L:p('12 16 19 16 19 16 12 16 17 21 24 21 24 21 17 21 16 19 23 19 23 19 16 19 14 18 21 18 21 18 14 18'),bw:'triangle',lw:'square',bl:1.6,ll:1.2,bv:.28,lv:.06,k:dr('x...x...'),h:dr('.x.x.x.x')},
+game:{b:126,r:57,B:p('0 0 . 0 0 . 0 . -4 -4 . -4 -4 . -4 . 3 3 . 3 3 . 3 . -2 -2 . -2 -2 . -2 .'),L:p('. . 12 . . 15 . . . . 12 . 17 . . . . . 15 . . 19 . . . . 14 . 12 . . .'),bw:'sawtooth',lw:'square',bl:.9,ll:1,bv:.14,lv:.07,k:dr('x.x.x.x.'),h:dr('.x')},
+alarm:{b:150,r:52,B:p('0 0 6 6 0 0 6 6 1 1 7 7 1 1 7 7'),L:p('24 . 25 . 24 . 25 . 24 . 25 . 24 . 27 .'),bw:'sawtooth',lw:'square',bl:1.4,ll:1.6,bv:.16,lv:.08,k:dr('x.x.x.x.'),h:dr('xxxxxxxx')},
+fun:{b:150,r:60,B:p('0 . 7 . 0 . 7 . 5 . 12 . 5 . 12 . 0 . 7 . 0 . 7 . -5 . 2 . 0 . . .'),L:p('12 . 16 . 12 . 19 . 17 . 14 . 17 . 21 . 16 . 12 . 16 . 19 . 14 . 16 . 12 . . .'),bw:'triangle',lw:'square',bl:1.2,ll:1.2,bv:.3,lv:.08,k:dr('x...x...'),h:dr('..x...x.')},
+sad:{b:58,r:50,B:p('0 . . . . . . . -4 . . . . . . . -7 . . . . . . . -5 . . . . . . .'),L:p('12 . . . 10 . . . 9 . . . 7 . . . 5 . . . 7 . . . 8 . . . 9 . . . . . . .'),bw:'sine',lw:'triangle',bl:7.5,ll:6,bv:.3,lv:.14,k:dr('.'),h:dr('.')}};
+function mn(f,d,ty,v,t){const o=A.createOscillator(),n=A.createGain();o.type=ty;o.frequency.value=f;n.gain.setValueAtTime(0,t);n.gain.linearRampToValueAtTime(v,t+.02);n.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(n).connect(mg);o.start(t);o.stop(t+d+.05)}
+function kk(t){const o=A.createOscillator(),n=A.createGain();o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(40,t+.14);n.gain.setValueAtTime(.35,t);n.gain.exponentialRampToValueAtTime(.001,t+.16);o.connect(n).connect(mg);o.start(t);o.stop(t+.2)}
+let nb;function hh(t){if(!nb){nb=A.createBuffer(1,A.sampleRate*.05,A.sampleRate);const x=nb.getChannelData(0);for(let i=0;i<x.length;i++)x[i]=Math.random()*2-1}const s=A.createBufferSource(),f=A.createBiquadFilter(),n=A.createGain();s.buffer=nb;f.type='highpass';f.frequency.value=7000;n.gain.value=.08;s.connect(f).connect(n).connect(mg);s.start(t)}
+function mus(){if(!A||A.state!='running')return;const dl=$('dl').classList.contains('on'),mg2=document.querySelector('#mo.on,#pi.on,#mp.on,#cn.on,#ct.on,#wo.on,#bh.on'),
+m=em||((sec==1||sec==3)&&scene!='menu'?'alarm':(scene=='arena'||mg2)?'game':scene=='menu'?'menu':'map');
+if(m!=mood){mood=m;mst=0;mnx=A.currentTime+.08}if(mnx<A.currentTime)mnx=A.currentTime+.05;
+mg.gain.setTargetAtTime(mvol*(dl&&duckOn?.15:1),A.currentTime,.12);
+const M=MS[mood],sd=30/M.b;while(mnx<A.currentTime+.35){const t=mnx,i=mst%32,b=M.B[i],l=M.L[i];if(b!=null)mn(MI(M.r+b-12),sd*M.bl,M.bw,M.bv,t);if(l!=null)mn(MI(M.r+l),sd*M.ll,M.lw,M.lv,t);if(M.k[i])kk(t);if(M.h[i])hh(t);mnx+=sd;mst++}}
+['pointerdown','click','touchend','keydown'].forEach(e=>addEventListener(e,()=>au()));
+$('mvl').oninput=e=>{mvol=e.target.value/100;$('mvv').textContent=e.target.value};$('dk').onchange=e=>duckOn=e.target.checked;
+$('gear').onclick=$('mset').onclick=()=>{stp=1;$('st').classList.add('on')};$('sx').onclick=()=>{stp=0;$('st').classList.remove('on')};
+// ---- старт ----
+function newGame(){em='';order=[1,2,3,4,5,6].sort(()=>Math.random()-.5);done=0;sec=0;sd=0;clearInterval(siv);mm=[];turbo=0;fl=0;$('tb').classList.remove('on');$('tb').textContent='Турбо: ВЫКЛ (T)';q='idle';map='mw';items=[];sh={x:0,y:-380,vx:0,vy:0,a:0};mon.fly=0;mon.x=2200;mon.y=300;scene='map';lock=0;
+['joy','hint','cnt','tb','gear'].forEach(i=>$(i).style.display='block');$('menu').classList.remove('on')}
+$('play').onclick=()=>{au();const d=document.documentElement;try{Promise.resolve((d.requestFullscreen||d.webkitRequestFullscreen).call(d,{navigationUI:'hide'})).then(()=>screen.orientation.lock('landscape')).catch(()=>{})}catch(e){}newGame()};
+$('exit').onclick=()=>{try{close()}catch(e){}$('menu').querySelector('p').textContent='Спасибо за игру! Закройте вкладку или нажмите «Играть».'};
+// ---- обновление ----
+function upd(dt){if(stp)return;T+=dt;if(scene=='menu')return;
+let ix=jx+(keys.arrowright||keys.d?1:0)-(keys.arrowleft||keys.a?1:0),iy=jy+(keys.arrowdown||keys.s?1:0)-(keys.arrowup||keys.w?1:0);const l=Math.hypot(ix,iy);if(l>1){ix/=l;iy/=l}if(lock){ix=iy=0}
+const vm=VM*(turbo&&scene=='map'?1.5:1),k=1-Math.exp(-1.6*dt);sh.vx+=(ix*vm-sh.vx)*k;sh.vy+=(iy*vm-sh.vy)*k;sh.x+=sh.vx*dt;sh.y+=sh.vy*dt;
+const b=scene=='arena'?[-AW,-AH,AW,AH]:B[map];sh.x=Math.max(b[0],Math.min(b[2],sh.x));sh.y=Math.max(b[1],Math.min(b[3],sh.y));
+sp=Math.hypot(sh.vx,sh.vy);if(sp>25){const d=((Math.atan2(sh.vy,sh.vx)-sh.a+3*Math.PI)%(2*Math.PI))-Math.PI;sh.a+=d*Math.min(1,dt*8)}
+if(eg)eg.gain.value=Math.min(.05,sp/VM*.05)*(lock?.3:1);
+if(mon.fly)mon.x+=500*dt;
+if(scene=='arena'){cx=cy=0;if(ap>0){ap-=dt;if(ap<=0){msg='';AT=0;ms=[];sm=1.2;sh={x:0,y:0,vx:0,vy:0,a:0}}}else{AT+=dt;sm-=dt;
+if(sm<=0){sm=Math.max(.38,.95-AT*.019);const s=Math.random()*4|0,r=R(13,26),v=(105+AT*3.5)*R(.8,1.2);let x,y,vx,vy;if(s<2){x=s?AW+70:-AW-70;y=R(-AH,AH);vx=(s?-1:1)*v;vy=R(-.35,.35)*v}else{y=s==2?AH+70:-AH-70;x=R(-AW,AW);vy=(s==2?-1:1)*v;vx=R(-.35,.35)*v}ms.push({x,y,vx,vy,r})}
+ms.forEach(m=>{m.x+=m.vx*dt;m.y+=m.vy*dt});ms=ms.filter(m=>Math.abs(m.x)<AW+200&&Math.abs(m.y)<AH+200);
+if(ms.some(m=>Math.hypot(m.x-sh.x,m.y-sh.y)<m.r+11)){sHit();ap=1.4;msg='Столкновение! Новая попытка…'}
+else if(AT>=30)return win()}}
+else{cx=sh.x;cy=sh.y;metUpd(dt);items=items.filter(i=>{if(Math.hypot(i.x-sh.x,i.y-sh.y)<70){sPick();return false}return true});
+if(/m[12456]a/.test(q)&&!items.length)q={m1a:'m1b',m2a:'m2b',m4a:'m4b',m5a:'m5b',m6a:'m6b'}[q]}
+$('act').style.display=target()?'block':'none';
+$('hint').textContent=scene=='arena'?(msg||'Уворачивайтесь! Осталось: '+Math.ceil(30-AT)+' с'):(sec==1?'🚨 Сирена! Летите на Сатурн!':sec==3?'🚨 Сирена! Спасите ёжика у чёрной дыры!':sec==4?'Доставьте ёжика к Командиру':HT[q]);
+$('cnt').textContent=q=='m1a'?'🍎 '+(6-items.length)+'/6':q=='m2a'?'📜 '+(4-items.length)+'/4':q=='m4a'?'🔧 '+(5-items.length)+'/5':q=='m5a'?'🧩 '+(5-items.length)+'/5':q=='m6a'?'🔥 '+(1-items.length)+'/1':q=='m3c'?'💎 Кристалл':'Миссия '+Math.min(done+1,6)+'/6'}
+// ---- отрисовка ----
+function ship(x,y,a,col,thr){g.save();g.translate(x,y);g.rotate(a);if(thr){g.fillStyle=turbo?'#ff9f1c':'#ffb4a2';g.beginPath();g.moveTo(-26,-7);g.lineTo(-44-Math.random()*14-(turbo?24:0),0);g.lineTo(-26,7);g.fill()}
+g.fillStyle='#b5838d';for(let i=-2;i<3;i++){g.beginPath();g.moveTo(-14,i*7-5);g.lineTo(-32,i*7);g.lineTo(-14,i*7+5);g.fill()}
+g.fillStyle=col;g.beginPath();g.ellipse(0,0,28,16,0,0,7);g.fill();g.fillStyle='#e0b1cb';g.beginPath();g.arc(20,-12,6,0,7);g.arc(20,12,6,0,7);g.fill();
+g.fillStyle='#fff3b0';g.beginPath();g.arc(6,0,12,0,7);g.fill();g.font='16px sans-serif';g.textAlign='center';g.fillText('🦔',6,6);g.restore()}
+const tx=(s,x,y,f,col='#f4eefc')=>{g.font=f+'px system-ui';g.fillStyle=col;g.textAlign='center';g.fillText(s,x,y)};
+function draw(){g.fillStyle=BG[map];g.fillRect(0,0,W,H);g.fillStyle='#fff';
+ST.forEach(s=>{const x=((s[0]-cx*.15*s[2])%1600+1600)%1600/1600*W,y=((s[1]-cy*.15*s[2])%1600+1600)%1600/1600*H;g.globalAlpha=.4+.3*Math.sin(T*2+s[0]);g.fillRect(x,y,s[2],s[2])});g.globalAlpha=1;
+if(scene=='menu')return;
+g.save();g.translate(W/2,H/2);g.scale(Z,Z);g.translate(-cx,-cy);
+if(scene=='arena'){g.strokeStyle='#ffd6a5';g.lineWidth=4;g.setLineDash([16,10]);g.strokeRect(-AW-20,-AH-20,2*AW+40,2*AH+40);g.setLineDash([]);
+ms.forEach(m=>{g.fillStyle='#a69cac';g.beginPath();g.arc(m.x,m.y,m.r,0,7);g.fill();g.fillStyle='#8a8090';g.beginPath();g.arc(m.x-m.r*.3,m.y-m.r*.2,m.r*.25,0,7);g.fill()});ship(sh.x,sh.y,sh.a,'#caf0f8',sp>40)}
+else{if(map=='mw')P.forEach(p=>{g.fillStyle=p[4];g.beginPath();g.arc(p[1],p[2],p[3],0,7);g.fill();g.fillStyle='rgba(255,255,255,.35)';g.beginPath();g.arc(p[1]-p[3]*.3,p[2]-p[3]*.3,p[3]*.3,0,7);g.fill();
+if(p[0]=='Сатурн'){g.strokeStyle='#e9d8a6';g.lineWidth=14;g.beginPath();g.ellipse(p[1],p[2],p[3]*1.6,p[3]*.4,-.3,0,7);g.stroke()}tx(p[0],p[1],p[2]+p[3]+44,34)});
+else(DEC[map]||[]).forEach(p=>{g.fillStyle=p[3];g.beginPath();g.arc(p[0],p[1],p[2],0,7);g.fill()});
+if(map=='mw'){bhd();g.font='64px sans-serif';g.textAlign='center';g.fillText('🦔',200,-150);tx(CM,200,-195,24,'#ffd6a5')}
+items.forEach(i=>{g.globalAlpha=.3+.2*Math.sin(T*4);g.fillStyle='#fff3b0';g.beginPath();g.arc(i.x,i.y,50,0,7);g.fill();g.globalAlpha=1;g.font='44px sans-serif';g.textAlign='center';g.fillText(i.t,i.x,i.y+15);tx(i.l,i.x,i.y+66,26,'#ffe066')});
+if(map=='jup'){const x=jx2(),y=jy2();ship(x,y,Math.atan2(Math.cos(T*.11)*1000,-Math.sin(T*.11)*1700),'#ffd6a5',1);tx('Корабль ёжиков',x,y-50,22,'#ffd6a5')}
+if(map=='brd'){const m=mon;g.fillStyle='#b5e48c';g.beginPath();g.arc(m.x,m.y,110,0,7);g.fill();g.beginPath();g.moveTo(m.x-80,m.y-70);g.lineTo(m.x-60,m.y-150);g.lineTo(m.x-30,m.y-95);g.moveTo(m.x+80,m.y-70);g.lineTo(m.x+60,m.y-150);g.lineTo(m.x+30,m.y-95);g.fill();
+g.fillStyle='#fff';g.beginPath();g.arc(m.x-40,m.y-25,28,0,7);g.arc(m.x+40,m.y-25,28,0,7);g.fill();g.fillStyle='#222';g.beginPath();g.arc(m.x-36,m.y-22,12,0,7);g.arc(m.x+36,m.y-22,12,0,7);g.fill();
+g.fillStyle='#7a2e4d';g.beginPath();g.arc(m.x,m.y+35,45,0,Math.PI);g.fill();tx('Монстр',m.x,m.y+150,26,'#ffafcc')}
+mm.forEach(met);if(inv<=0||Math.floor(T*12)%2)ship(sh.x,sh.y,sh.a,'#caf0f8',sp>40&&!lock)}
+g.restore();
+if(scene=='map'){const b=B[map],mw=130,mh=mw*(b[3]-b[1])/(b[2]-b[0]),mx=10,my=10,f=mw/(b[2]-b[0]),X=x=>mx+(x-b[0])*f,Y=y=>my+(y-b[1])*f;
+g.fillStyle='rgba(11,13,31,.7)';g.fillRect(mx,my,mw,mh);g.strokeStyle='#bde0fe';g.strokeRect(mx,my,mw,mh);
+if(map=='mw')P.forEach(p=>{g.fillStyle=p[4];g.beginPath();g.arc(X(p[1]),Y(p[2]),3,0,7);g.fill()});
+g.fillStyle='#ffe066';items.forEach(i=>g.fillRect(X(i.x)-2,Y(i.y)-2,4,4));
+if(map=='jup'){g.fillRect(X(jx2())-3,Y(jy2())-3,6,6)}if(map=='brd'&&!mon.fly)g.fillRect(X(mon.x)-3,Y(mon.y)-3,6,6);
+g.fillStyle='#fff';g.beginPath();g.arc(X(sh.x),Y(sh.y),3,0,7);g.fill()}}
+let lt=0;function loop(t){const dt=Math.min(.05,(t-lt)/1000||0);lt=t;upd(dt);draw();ov();mus();requestAnimationFrame(loop)}requestAnimationFrame(loop);
+</script></body></html>
